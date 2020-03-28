@@ -27,15 +27,17 @@ firebase functions:config:set MS_KNOWLEDGE_API_SECONDARY_KEY=""
 
 Login --> Create Update Users Collection --> Create User Context at protected route level
 
+```
 /admin/users
 /admin/groups
 /admin/elections
 /admin/placements
+```
 
 ## Tasks
 
-[ ] Sign Up
-[ ] Forgot Password
+- [ ] Sign Up
+- [ ] Forgot Password
 
 - User already exists
 - Success message
