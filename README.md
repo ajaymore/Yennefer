@@ -7,8 +7,8 @@
 
 ## Microsoft Academic Knowledge API
 
-https://msr-apis.portal.azure-api.net/products/project-academic-knowledge
-https://docs.microsoft.com/en-gb/academic-services/project-academic-knowledge/reference-interpret-method
+- https://msr-apis.portal.azure-api.net/products/project-academic-knowledge
+- https://docs.microsoft.com/en-gb/academic-services/project-academic-knowledge/reference-interpret-method
 
 ```
 firebase functions:config:set MS_KNOWLEDGE_API_SECONDARY_KEY=""
@@ -34,8 +34,8 @@ Login --> Create Update Users Collection --> Create User Context at protected ro
 
 ## Tasks
 
-[] Sign Up
-[] Forgot Password
+[ ] Sign Up
+[ ] Forgot Password
 
 - User already exists
 - Success message
