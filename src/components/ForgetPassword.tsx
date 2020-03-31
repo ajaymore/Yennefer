@@ -1,33 +1,19 @@
-import React, { useEffect } from "react";
+import React from "react";
 import firebase from "firebase/app";
-import { useLocation, useHistory } from "react-router-dom";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { useWindowSize } from "../hooks/useWindowSize";
 import {
   TextField,
   PrimaryButton,
   Link,
-  Icon,
   MessageBar,
   MessageBarType
 } from "office-ui-fabric-react";
 import RouterLink from "./RouterLink";
-import { useWindowSize } from "../hooks/useWindowSize";
 
-function Login() {
-  const history = useHistory();
-  const { state }: any = useLocation();
+function ForgetPassword() {
   const { width, height } = useWindowSize();
-  const { from } = state || { from: "/" };
-
-  useEffect(() => {
-    return firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        history.push(from);
-      }
-    });
-  }, [from, history]);
-
   return (
     <div
       style={{
@@ -45,69 +31,36 @@ function Login() {
           style={{
             padding: 32,
             backgroundColor: "#fff"
-            // boxShadow:
-            //   '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)'
           }}
         >
-          <div style={{ textAlign: "center" }}>
-            <Icon
-              iconName="Signin"
-              style={{
-                fontSize: 32,
-                border: "2px solid",
-                padding: 16,
-                borderRadius: 50,
-                marginBottom: 16
-              }}
-            />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <button
-              className="google-auth-btn"
-              onClick={e => {
-                e.preventDefault();
-                firebase
-                  .auth()
-                  .signInWithPopup(new firebase.auth.GoogleAuthProvider());
-              }}
-            >
-              &nbsp;
-            </button>
-          </div>
-          <br />
           <Formik
-            initialValues={{ email: "", password: "" }}
+            initialValues={{ email: "" }}
             validationSchema={() =>
               Yup.object({
                 email: Yup.string()
                   .label("Email")
                   .email()
-                  .required(),
-                password: Yup.string()
-                  .label("Password")
                   .required()
               })
             }
             onSubmit={async (values, actions) => {
               try {
-                await firebase
-                  .auth()
-                  .signInWithEmailAndPassword(values.email, values.password);
+                await firebase.auth().sendPasswordResetEmail(values.email);
               } catch (error) {
                 actions.setSubmitting(false);
-                if (error.code === "auth/user-not-found") {
+                if (error.code === "auth/invalid-email") {
                   actions.setStatus({
-                    message: "We could not find this user!",
+                    message: "Invalid Email address",
                     type: "Error"
                   });
-                } else if (error.code === "auth/wrong-password") {
+                } else if (error.code === "auth/user-not-found") {
                   actions.setStatus({
-                    message: "Seems like you entered a wrong password!",
+                    message: "No User found",
                     type: "Error"
                   });
                 } else {
                   actions.setStatus({
-                    message: "Sorry We could not authenticate you!",
+                    message: "Sorry We could not reset the password",
                     type: "Error"
                   });
                 }
@@ -141,25 +94,10 @@ function Login() {
                   }
                   iconProps={{ iconName: "PublicEmail" }}
                 />
-                <TextField
-                  type="password"
-                  label="Password"
-                  required
-                  name="password"
-                  value={formikProps.values.password}
-                  onChange={formikProps.handleChange}
-                  onBlur={formikProps.handleBlur}
-                  errorMessage={
-                    formikProps.touched.password
-                      ? formikProps.errors.password
-                      : ""
-                  }
-                  iconProps={{ iconName: "PasswordField" }}
-                />
                 <br />
                 <div style={{ textAlign: "center" }}>
                   <PrimaryButton
-                    text="Login"
+                    text="Reset Password"
                     type="submit"
                     allowDisabledFocus
                     disabled={formikProps.isSubmitting}
@@ -168,12 +106,8 @@ function Login() {
                 </div>
                 <br />
                 <div style={{ display: "flex", justifyContent: "center" }}>
-                  <RouterLink to="/sign-up">
-                    <Link>Sign Up</Link>
-                  </RouterLink>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <RouterLink to="/forgot-password">
-                    <Link>Forgot Password</Link>
+                  <RouterLink to="/login">
+                    <Link>Go Back to Login Page</Link>
                   </RouterLink>
                 </div>
               </Form>
@@ -185,4 +119,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default ForgetPassword;

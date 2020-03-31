@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -6,17 +6,19 @@ import {
   RouteProps,
   useLocation,
   Redirect
-} from 'react-router-dom';
-import { Fabric, Spinner, SpinnerSize } from 'office-ui-fabric-react';
-import { NotFound404 } from './components/NotFound404';
-import firebase from 'firebase/app';
-import Login from './components/Login';
+} from "react-router-dom";
+import { Fabric, Spinner, SpinnerSize } from "office-ui-fabric-react";
+import { NotFound404 } from "./components/NotFound404";
+import firebase from "firebase/app";
+import Login from "./components/Login";
+import SignUp from "./components/SignUp";
+import ForgetPassword from "./components/ForgetPassword";
 
 const AcademicKnowledge = React.lazy(() =>
-  import('./components/AcademicKnowledge')
+  import("./components/AcademicKnowledge")
 );
 
-const ProtectedRoute: React.FC<RouteProps & { user: any }> = ({
+const ProtectedRoute: React.FC<RouteProps & { user: firebase.User | null }> = ({
   children,
   user,
   ...rest
@@ -27,7 +29,7 @@ const ProtectedRoute: React.FC<RouteProps & { user: any }> = ({
     return (
       <Redirect
         to={{
-          pathname: '/login',
+          pathname: "/login",
           state: { from: pathname }
         }}
       />
@@ -68,7 +70,18 @@ function App() {
       <Fabric>
         <Switch>
           <ProtectedRoute exact path="/" user={user}>
-            <div>I am home page</div>
+            <div>
+              <h1 style={{ textAlign: "center" }}>Welcome To the login page</h1>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <button
+                onClick={() => {
+                  firebase.auth().signOut();
+                }}
+              >
+                Sign out
+              </button>
+            </div>
           </ProtectedRoute>
           <ProtectedRoute exact path="/protected" user={user}>
             <div>I am protected page</div>
@@ -84,10 +97,10 @@ function App() {
             <Login />
           </Route>
           <Route path="/sign-up">
-            <div>Sign up</div>
+            <SignUp />
           </Route>
           <Route path="/forgot-password">
-            <div>Forgot password</div>
+            <ForgetPassword />
           </Route>
           <Route path="/project-academic-knowledge">
             <Suspense fallback={Spinner}>

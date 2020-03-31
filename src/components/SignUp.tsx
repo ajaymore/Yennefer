@@ -14,19 +14,8 @@ import {
 import RouterLink from "./RouterLink";
 import { useWindowSize } from "../hooks/useWindowSize";
 
-function Login() {
-  const history = useHistory();
-  const { state }: any = useLocation();
+function SignUp() {
   const { width, height } = useWindowSize();
-  const { from } = state || { from: "/" };
-
-  useEffect(() => {
-    return firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        history.push(from);
-      }
-    });
-  }, [from, history]);
 
   return (
     <div
@@ -45,8 +34,6 @@ function Login() {
           style={{
             padding: 32,
             backgroundColor: "#fff"
-            // boxShadow:
-            //   '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)'
           }}
         >
           <div style={{ textAlign: "center" }}>
@@ -61,22 +48,10 @@ function Login() {
               }}
             />
           </div>
-          <div style={{ textAlign: "center" }}>
-            <button
-              className="google-auth-btn"
-              onClick={e => {
-                e.preventDefault();
-                firebase
-                  .auth()
-                  .signInWithPopup(new firebase.auth.GoogleAuthProvider());
-              }}
-            >
-              &nbsp;
-            </button>
-          </div>
+
           <br />
           <Formik
-            initialValues={{ email: "", password: "" }}
+            initialValues={{ email: "", password: "", confirmPassword: "" }}
             validationSchema={() =>
               Yup.object({
                 email: Yup.string()
@@ -85,19 +60,37 @@ function Login() {
                   .required(),
                 password: Yup.string()
                   .label("Password")
+                  .required(),
+                confirmPassword: Yup.string()
+                  .label("Confirm Password")
                   .required()
+                  .when("password", {
+                    is: val => (val && val.length > 0 ? true : false),
+                    then: Yup.string().oneOf(
+                      [Yup.ref("password")],
+                      "Both password need to be the same"
+                    )
+                  })
               })
             }
             onSubmit={async (values, actions) => {
               try {
                 await firebase
                   .auth()
-                  .signInWithEmailAndPassword(values.email, values.password);
+                  .createUserWithEmailAndPassword(
+                    values.email,
+                    values.password
+                  );
               } catch (error) {
                 actions.setSubmitting(false);
-                if (error.code === "auth/user-not-found") {
+                if (error.code === "auth/email-already-in-use") {
                   actions.setStatus({
-                    message: "We could not find this user!",
+                    message: "This User already Exist",
+                    type: "Error"
+                  });
+                } else if (error.code === "auth/invalid-email") {
+                  actions.setStatus({
+                    message: "Invalid email address",
                     type: "Error"
                   });
                 } else if (error.code === "auth/wrong-password") {
@@ -156,10 +149,25 @@ function Login() {
                   }
                   iconProps={{ iconName: "PasswordField" }}
                 />
+                <TextField
+                  type="password"
+                  label="Confirm Password"
+                  required
+                  name="confirmPassword"
+                  value={formikProps.values.confirmPassword}
+                  onChange={formikProps.handleChange}
+                  onBlur={formikProps.handleBlur}
+                  errorMessage={
+                    formikProps.touched.confirmPassword
+                      ? formikProps.errors.confirmPassword
+                      : ""
+                  }
+                  iconProps={{ iconName: "PasswordField" }}
+                />
                 <br />
                 <div style={{ textAlign: "center" }}>
                   <PrimaryButton
-                    text="Login"
+                    text="SignUp"
                     type="submit"
                     allowDisabledFocus
                     disabled={formikProps.isSubmitting}
@@ -168,12 +176,8 @@ function Login() {
                 </div>
                 <br />
                 <div style={{ display: "flex", justifyContent: "center" }}>
-                  <RouterLink to="/sign-up">
-                    <Link>Sign Up</Link>
-                  </RouterLink>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <RouterLink to="/forgot-password">
-                    <Link>Forgot Password</Link>
+                  <RouterLink to="/login">
+                    <Link>Go Back to Login Page</Link>
                   </RouterLink>
                 </div>
               </Form>
@@ -185,4 +189,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignUp;
