@@ -2,7 +2,7 @@ import React from 'react';
 import Lottie from 'react-lottie';
 import { useWindowSize } from '../hooks/useWindowSize';
 import animationData from './lottie/4958-404-not-found.json';
-import { Link } from 'office-ui-fabric-react';
+import { Link } from '@fluentui/react';
 import RouterLink from './RouterLink';
 
 export function NotFound404() {

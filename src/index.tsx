@@ -8,7 +8,7 @@ import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 import { firebaseConfig } from './keys';
-import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
+import { initializeIcons } from '@fluentui/react/lib/Icons';
 
 firebase.initializeApp(firebaseConfig);
 initializeIcons(/* optional base url */);

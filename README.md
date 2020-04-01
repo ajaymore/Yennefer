@@ -36,9 +36,9 @@ Login --> Create Update Users Collection --> Create User Context at protected ro
 
 ## Tasks
 
-- [ ] Sign Up
-- [ ] Forgot Password
+- [ ] Add Success Message
+- [ ] Users & Groups page
 
-- User already exists
-- Success message
-- Redirect to login Screen
+1. Self Signup -> Confirm Email --> Access & collection Entry
+2. Google Sign In --> Access & collection Entry
+3. Admin Registers --> Collection Entry

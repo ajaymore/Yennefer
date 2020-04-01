@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
-import firebase from "firebase/app";
-import { useLocation, useHistory } from "react-router-dom";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
+import React from 'react';
+import firebase from 'firebase/app';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
 import {
   TextField,
   PrimaryButton,
@@ -10,9 +9,9 @@ import {
   Icon,
   MessageBar,
   MessageBarType
-} from "office-ui-fabric-react";
-import RouterLink from "./RouterLink";
-import { useWindowSize } from "../hooks/useWindowSize";
+} from '@fluentui/react';
+import RouterLink from './RouterLink';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 function SignUp() {
   const { width, height } = useWindowSize();
@@ -27,21 +26,21 @@ function SignUp() {
     >
       <div
         className="ms-Grid-row"
-        style={{ display: "flex", justifyContent: "center" }}
+        style={{ display: 'flex', justifyContent: 'center' }}
       >
         <div
           className="ms-Grid-col ms-sm12 ms-md6 ms-lg6 ms-depth-8 login-box"
           style={{
             padding: 32,
-            backgroundColor: "#fff"
+            backgroundColor: '#fff'
           }}
         >
-          <div style={{ textAlign: "center" }}>
+          <div style={{ textAlign: 'center' }}>
             <Icon
               iconName="Signin"
               style={{
                 fontSize: 32,
-                border: "2px solid",
+                border: '2px solid',
                 padding: 16,
                 borderRadius: 50,
                 marginBottom: 16
@@ -51,24 +50,24 @@ function SignUp() {
 
           <br />
           <Formik
-            initialValues={{ email: "", password: "", confirmPassword: "" }}
+            initialValues={{ email: '', password: '', confirmPassword: '' }}
             validationSchema={() =>
               Yup.object({
                 email: Yup.string()
-                  .label("Email")
+                  .label('Email')
                   .email()
                   .required(),
                 password: Yup.string()
-                  .label("Password")
+                  .label('Password')
                   .required(),
                 confirmPassword: Yup.string()
-                  .label("Confirm Password")
+                  .label('Confirm Password')
                   .required()
-                  .when("password", {
+                  .when('password', {
                     is: val => (val && val.length > 0 ? true : false),
                     then: Yup.string().oneOf(
-                      [Yup.ref("password")],
-                      "Both password need to be the same"
+                      [Yup.ref('password')],
+                      'Both password need to be the same'
                     )
                   })
               })
@@ -83,25 +82,20 @@ function SignUp() {
                   );
               } catch (error) {
                 actions.setSubmitting(false);
-                if (error.code === "auth/email-already-in-use") {
+                if (error.code === 'auth/email-already-in-use') {
                   actions.setStatus({
-                    message: "This User already Exist",
-                    type: "Error"
+                    message: 'This User already Exist',
+                    type: 'Error'
                   });
-                } else if (error.code === "auth/invalid-email") {
+                } else if (error.code === 'auth/invalid-email') {
                   actions.setStatus({
-                    message: "Invalid email address",
-                    type: "Error"
-                  });
-                } else if (error.code === "auth/wrong-password") {
-                  actions.setStatus({
-                    message: "Seems like you entered a wrong password!",
-                    type: "Error"
+                    message: 'Invalid email address',
+                    type: 'Error'
                   });
                 } else {
                   actions.setStatus({
-                    message: "Sorry We could not authenticate you!",
-                    type: "Error"
+                    message: 'Sorry We could not authenticate you!',
+                    type: 'Error'
                   });
                 }
               }
@@ -109,7 +103,7 @@ function SignUp() {
           >
             {formikProps => (
               <Form noValidate>
-                {formikProps.status && formikProps.status.type === "Error" && (
+                {formikProps.status && formikProps.status.type === 'Error' && (
                   <div>
                     <MessageBar
                       messageBarType={MessageBarType.error}
@@ -130,9 +124,9 @@ function SignUp() {
                   onChange={formikProps.handleChange}
                   onBlur={formikProps.handleBlur}
                   errorMessage={
-                    formikProps.touched.email ? formikProps.errors.email : ""
+                    formikProps.touched.email ? formikProps.errors.email : ''
                   }
-                  iconProps={{ iconName: "PublicEmail" }}
+                  iconProps={{ iconName: 'PublicEmail' }}
                 />
                 <TextField
                   type="password"
@@ -145,9 +139,9 @@ function SignUp() {
                   errorMessage={
                     formikProps.touched.password
                       ? formikProps.errors.password
-                      : ""
+                      : ''
                   }
-                  iconProps={{ iconName: "PasswordField" }}
+                  iconProps={{ iconName: 'PasswordField' }}
                 />
                 <TextField
                   type="password"
@@ -160,12 +154,12 @@ function SignUp() {
                   errorMessage={
                     formikProps.touched.confirmPassword
                       ? formikProps.errors.confirmPassword
-                      : ""
+                      : ''
                   }
-                  iconProps={{ iconName: "PasswordField" }}
+                  iconProps={{ iconName: 'PasswordField' }}
                 />
                 <br />
-                <div style={{ textAlign: "center" }}>
+                <div style={{ textAlign: 'center' }}>
                   <PrimaryButton
                     text="SignUp"
                     type="submit"
@@ -175,7 +169,7 @@ function SignUp() {
                   />
                 </div>
                 <br />
-                <div style={{ display: "flex", justifyContent: "center" }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <RouterLink to="/login">
                     <Link>Go Back to Login Page</Link>
                   </RouterLink>

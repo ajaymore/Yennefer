@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -6,16 +6,18 @@ import {
   RouteProps,
   useLocation,
   Redirect
-} from "react-router-dom";
-import { Fabric, Spinner, SpinnerSize } from "office-ui-fabric-react";
-import { NotFound404 } from "./components/NotFound404";
-import firebase from "firebase/app";
-import Login from "./components/Login";
-import SignUp from "./components/SignUp";
-import ForgetPassword from "./components/ForgetPassword";
+} from 'react-router-dom';
+import { Fabric, Spinner, SpinnerSize } from '@fluentui/react';
+import { NotFound404 } from './components/NotFound404';
+import firebase from 'firebase/app';
+import Login from './components/Login';
+import SignUp from './components/SignUp';
+import ForgetPassword from './components/ForgetPassword';
+import Admin from './components/Admin';
+import SideNavigation from './components/SideNavigation';
 
 const AcademicKnowledge = React.lazy(() =>
-  import("./components/AcademicKnowledge")
+  import('./components/AcademicKnowledge')
 );
 
 const ProtectedRoute: React.FC<RouteProps & { user: firebase.User | null }> = ({
@@ -29,14 +31,18 @@ const ProtectedRoute: React.FC<RouteProps & { user: firebase.User | null }> = ({
     return (
       <Redirect
         to={{
-          pathname: "/login",
+          pathname: '/login',
           state: { from: pathname }
         }}
       />
     );
   }
 
-  return <Route {...rest}>{children}</Route>;
+  return (
+    <SideNavigation>
+      <Route {...rest}>{children}</Route>
+    </SideNavigation>
+  );
 };
 
 function App() {
@@ -44,10 +50,48 @@ function App() {
   const [user, setUser] = useState<null | firebase.User>(null);
 
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+    const unsubscribe = firebase.auth().onAuthStateChanged(async user => {
       setLoading(false);
+      setUser(user);
       if (user) {
-        setUser(user);
+        let dbEntry = null;
+        if (user.email) {
+          dbEntry = await firebase
+            .firestore()
+            .collection('users')
+            .where('email', '==', user.email)
+            .get();
+        } else if (user.phoneNumber) {
+          dbEntry = await firebase
+            .firestore()
+            .collection('users')
+            .where('phoneNumber', '==', user.phoneNumber)
+            .get();
+        }
+        if (dbEntry && !dbEntry.docs.length) {
+          firebase
+            .firestore()
+            .collection('users')
+            .add({
+              uid: user.uid,
+              email: user.email,
+              emailVerified: user.emailVerified,
+              displayName: user.displayName,
+              phoneNumber: user.phoneNumber
+            });
+        } else if (dbEntry) {
+          const doc = dbEntry.docs[0];
+          firebase
+            .firestore()
+            .doc(doc.ref.path)
+            .update({
+              uid: user.uid,
+              email: user.email,
+              emailVerified: user.emailVerified,
+              displayName: user.displayName,
+              phoneNumber: user.phoneNumber
+            });
+        }
       } else {
         setUser(null);
       }
@@ -71,9 +115,9 @@ function App() {
         <Switch>
           <ProtectedRoute exact path="/" user={user}>
             <div>
-              <h1 style={{ textAlign: "center" }}>Welcome To the login page</h1>
+              <h1 style={{ textAlign: 'center' }}>Welcome To the login page</h1>
             </div>
-            <div style={{ textAlign: "center" }}>
+            <div style={{ textAlign: 'center' }}>
               <button
                 onClick={() => {
                   firebase.auth().signOut();
@@ -83,15 +127,8 @@ function App() {
               </button>
             </div>
           </ProtectedRoute>
-          <ProtectedRoute exact path="/protected" user={user}>
-            <div>I am protected page</div>
-            <button
-              onClick={() => {
-                firebase.auth().signOut();
-              }}
-            >
-              Sign out
-            </button>
+          <ProtectedRoute path="/admin" user={user}>
+            <Admin />
           </ProtectedRoute>
           <Route path="/login">
             <Login />
