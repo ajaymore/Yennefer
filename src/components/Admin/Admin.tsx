@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouteMatch, Route, Redirect } from 'react-router-dom';
 import Users from './Users';
+import Groups from './Groups';
 
 function Admin() {
   const { path } = useRouteMatch();
@@ -13,7 +14,7 @@ function Admin() {
         <Users />
       </Route>
       <Route path={`${path}/groups`}>
-        <div>Groups</div>
+        <Groups />
       </Route>
     </div>
   );

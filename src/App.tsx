@@ -19,6 +19,7 @@ import SideNavigation from './components/SideNavigation';
 const AcademicKnowledge = React.lazy(() =>
   import('./components/AcademicKnowledge')
 );
+const FakeData = React.lazy(() => import('./components/FakeData'));
 
 const ProtectedRoute: React.FC<RouteProps & { user: firebase.User | null }> = ({
   children,
@@ -74,7 +75,7 @@ function App() {
             .collection('users')
             .add({
               uid: user.uid,
-              email: user.email,
+              email: user.email ? user.email.toLowerCase() : '',
               emailVerified: user.emailVerified,
               displayName: user.displayName,
               phoneNumber: user.phoneNumber
@@ -140,8 +141,13 @@ function App() {
             <ForgetPassword />
           </Route>
           <Route path="/project-academic-knowledge">
-            <Suspense fallback={Spinner}>
+            <Suspense fallback={<Spinner />}>
               <AcademicKnowledge />
+            </Suspense>
+          </Route>
+          <Route path="/fake-data">
+            <Suspense fallback={<Spinner />}>
+              <FakeData />
             </Suspense>
           </Route>
           <Route path="*">
