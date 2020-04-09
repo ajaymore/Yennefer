@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {
@@ -11,9 +11,12 @@ import {
   ChoiceGroup,
   MessageBar,
   MessageBarType,
+  IconButton,
 } from "@fluentui/react";
 import firebase from "firebase/app";
+import { useParams } from "react-router-dom";
 import GroupSelector from "./GroupSelector";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const DayPickerStrings: IDatePickerStrings = {
   months: [
@@ -67,9 +70,9 @@ const DayPickerStrings: IDatePickerStrings = {
 };
 
 const options: IChoiceGroupOption[] = [
-  { key: "Male", text: "Male" },
-  { key: "Female", text: "Female" },
-  { key: "Other", text: "Other" },
+  { key: "A", text: "Male" },
+  { key: "B", text: "Female" },
+  { key: "C", text: "Other" },
 ];
 
 const controlClass = mergeStyleSets({
@@ -79,20 +82,46 @@ const controlClass = mergeStyleSets({
   },
 });
 
-function NewUser() {
-  // email , phoneNumer , displayName, birthDate, Gender (Male, Female, Other), groups
+function EditUser() {
+  const { height } = useWindowSize();
+  const [user, setUser] = useState<{
+    id: string;
+    displayName: string;
+    email: string;
+    phoneNumber: string;
+    birthDate: Date;
+    gender: string;
+    groups: { id: string; name: string }[];
+  }>({
+    id: "",
+    email: "",
+    phoneNumber: "",
+    displayName: "",
+    birthDate: new Date(),
+    gender: "",
+    groups: [],
+  });
+  const { id }: any = useParams();
+
+  useEffect(() => {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(id)
+      .onSnapshot((documentSnapshot) => {
+        const { birthDate, ...rest }: any = documentSnapshot.data();
+        setUser({
+          ...rest,
+          birthDate: birthDate ? birthDate.toDate() : new Date(),
+        });
+      });
+  }, [id]);
 
   return (
     <div>
       <Formik
-        initialValues={{
-          email: "",
-          phoneNumber: "",
-          displayName: "",
-          birthDate: new Date(),
-          gender: "Male",
-          groups: [],
-        }}
+        enableReinitialize
+        initialValues={user}
         validationSchema={() =>
           Yup.object({
             email: Yup.string().label("Email").required(),
@@ -112,36 +141,34 @@ function NewUser() {
           actions.resetForm();
 
           try {
-            const newUser = await firebase.firestore().collection("users").add({
-              displayName: values.displayName,
-              email: values.email,
-              phoneNumber: values.phoneNumber,
-              birthDate: values.birthDate,
-              gender: values.gender,
-              groups: values.groups,
-            });
-            await Promise.all(
-              values.groups.map((group: any) => {
+            firebase
+              .firestore()
+              .collection("users")
+              .doc(id)
+              .update({
+                email: values.email,
+                phoneNumber: values.phoneNumber,
+                displayName: values.displayName,
+                birthDate: values.birthDate,
+                gender: values.gender,
+                groups: firebase.firestore.FieldValue.arrayUnion(
+                  ...values.groups
+                ),
+              });
+            if (values.groups) {
+              values.groups.forEach((group) => {
                 firebase
                   .firestore()
                   .collection("groups")
                   .doc(group.id)
                   .update({
                     users: firebase.firestore.FieldValue.arrayUnion({
-                      imageInitials: values.displayName
-                        .slice(0, 2)
-                        .toUpperCase(),
-                      imageUrl: "",
-                      optionalText: "Available at 4:00pm",
-                      presence: 2,
-                      secondaryText: values.email,
-                      tertiaryText: "In a meeting",
-                      text: values.displayName,
-                      id: newUser.id,
+                      id,
+                      displayname: user.displayName,
                     }),
                   });
-              })
-            );
+              });
+            }
             actions.setStatus({
               message: "added Successfully!",
               type: "Success",
@@ -156,12 +183,14 @@ function NewUser() {
       >
         {(formikProps) => (
           <Form>
+            {console.log(formikProps.values, formikProps.errors)}
             <br />
             <TextField
               placeholder=" Enter a Name"
               required
               label="Name"
               name="displayName"
+              value={formikProps.values.displayName}
               onChange={formikProps.handleChange}
               onBlur={formikProps.handleBlur}
               errorMessage={
@@ -176,6 +205,7 @@ function NewUser() {
               required
               label="Email"
               name="email"
+              value={formikProps.values.email}
               onChange={formikProps.handleChange}
               onBlur={formikProps.handleBlur}
               errorMessage={
@@ -188,6 +218,7 @@ function NewUser() {
               required
               label="Phone"
               name="phoneNumber"
+              value={formikProps.values.phoneNumber}
               onChange={formikProps.handleChange}
               onBlur={formikProps.handleBlur}
               errorMessage={
@@ -213,17 +244,12 @@ function NewUser() {
             />
             <br />
             <ChoiceGroup
-              selectedKey={formikProps.values.gender}
+              defaultSelectedKey="A"
               options={options}
-              name="gender"
-              onChange={(ev: any, option: any) => {
-                formikProps.setFieldValue("gender", option.key);
-              }}
-              label="gender"
+              onChange={formikProps.handleChange}
+              label="Gender"
               required={true}
             />
-            <br />
-            <GroupSelector formikProps={formikProps} />
             <br />
 
             {formikProps.status && (
@@ -245,8 +271,63 @@ function NewUser() {
               </div>
             )}
             <br />
+
+            <GroupSelector formikProps={formikProps} />
+            <br />
+
+            <div
+              style={{
+                height: height - 300,
+                overflowY: "scroll",
+              }}
+            >
+              {user.groups &&
+                user.groups.map((group) => (
+                  <div
+                    key={group.id}
+                    style={{
+                      marginBottom: 8,
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div className="ms-fontWeight-semibold ms-fontColor-gray220">
+                        {group.name}
+                      </div>
+                    </div>
+                    <IconButton
+                      onClick={() => {
+                        firebase
+                          .firestore()
+                          .collection("groups")
+                          .doc(id)
+                          .update({
+                            users: firebase.firestore.FieldValue.arrayRemove(
+                              user
+                            ),
+                          });
+                        firebase
+                          .firestore()
+                          .collection("users")
+                          .doc(user.id)
+                          .update({
+                            groups: firebase.firestore.FieldValue.arrayRemove(
+                              group
+                            ),
+                          });
+                      }}
+                      iconProps={{ iconName: "Clear" }}
+                      title="Clear"
+                      ariaLabel="Clear"
+                    />
+                  </div>
+                ))}
+            </div>
+            <br />
+
             <PrimaryButton type="submit" disabled={formikProps.isSubmitting}>
-              Submit
+              Update
             </PrimaryButton>
           </Form>
         )}
@@ -255,4 +336,4 @@ function NewUser() {
   );
 }
 
-export default NewUser;
+export default EditUser;
