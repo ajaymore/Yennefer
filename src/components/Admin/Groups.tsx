@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import firebase from 'firebase/app';
+import React, { useState, useEffect, useMemo } from "react";
+import firebase from "firebase/app";
 import {
   TextField,
   MessageBar,
@@ -8,13 +8,13 @@ import {
   DetailsListLayoutMode,
   SelectionMode,
   Panel,
-  PrimaryButton
-} from '@fluentui/react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { useHistory, useRouteMatch, Route } from 'react-router-dom';
-import EditGroup from './EditGroup';
-import { useWindowSize } from '../../hooks/useWindowSize';
+  PrimaryButton,
+} from "@fluentui/react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { useHistory, useRouteMatch, Route } from "react-router-dom";
+import EditGroup from "./EditGroup";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 type Groups = { name: string; id: string }[];
 
@@ -27,11 +27,11 @@ function Groups() {
   useEffect(() => {
     const unsubscribe = firebase
       .firestore()
-      .collection('groups')
-      .orderBy('name', 'asc')
-      .onSnapshot(querySnapshot => {
+      .collection("groups")
+      .orderBy("name", "asc")
+      .onSnapshot((querySnapshot) => {
         let array: any = [];
-        querySnapshot.forEach(doc => {
+        querySnapshot.forEach((doc) => {
           array = [...array, { id: doc.id, key: doc.id, ...doc.data() }];
         });
         setGroups(array);
@@ -42,27 +42,24 @@ function Groups() {
   const columns = useMemo(
     () => [
       {
-        key: 'column1',
-        name: 'Name',
-        fieldName: 'name',
+        key: "column1",
+        name: "Name",
+        fieldName: "name",
         minWidth: 100,
         maxWidth: 200,
-        isResizable: true
-      }
+        isResizable: true,
+      },
     ],
     []
   );
 
   return (
-    <div style={{ boxSizing: 'border-box', padding: 16 }}>
+    <div style={{ boxSizing: "border-box", padding: 16 }}>
       <Formik
-        initialValues={{ name: '' }}
+        initialValues={{ name: "" }}
         validationSchema={() =>
           Yup.object({
-            name: Yup.string()
-              .label('Group name')
-              .min(4)
-              .required()
+            name: Yup.string().label("Group name").min(4).required(),
           })
         }
         onSubmit={async (values, actions) => {
@@ -71,26 +68,26 @@ function Groups() {
           try {
             await firebase
               .firestore()
-              .collection('groups')
+              .collection("groups")
               .add({ name: values.name });
             actions.setStatus({
-              message: 'Group added successfully!',
-              type: 'Success'
+              message: "Group added successfully!",
+              type: "Success",
             });
           } catch (err) {
             actions.setStatus({
-              message: 'There was a problem adding the group!',
-              type: 'Error'
+              message: "There was a problem adding the group!",
+              type: "Error",
             });
           }
         }}
       >
-        {formikProps => (
+        {(formikProps) => (
           <Form>
             <div
               style={{
-                display: 'flex',
-                alignItems: 'flex-end'
+                display: "flex",
+                alignItems: "flex-end",
               }}
             >
               <div style={{ flexGrow: 1 }}>
@@ -103,7 +100,7 @@ function Groups() {
                   onChange={formikProps.handleChange}
                   onBlur={formikProps.handleBlur}
                   errorMessage={
-                    formikProps.touched.name ? formikProps.errors.name : ''
+                    formikProps.touched.name ? formikProps.errors.name : ""
                   }
                 />
               </div>
@@ -114,7 +111,7 @@ function Groups() {
               <div style={{ marginTop: 4 }}>
                 <MessageBar
                   messageBarType={
-                    formikProps.status.type === 'Error'
+                    formikProps.status.type === "Error"
                       ? MessageBarType.error
                       : MessageBarType.success
                   }

@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Formik, Form } from 'formik';
-import firebase from 'firebase/app';
-import * as Yup from 'yup';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Formik, Form } from "formik";
+import firebase from "firebase/app";
+import * as Yup from "yup";
 import {
   TextField,
   MessageBar,
@@ -11,13 +11,13 @@ import {
   IBasePickerSuggestionsProps,
   ValidationState,
   NormalPeoplePicker,
-  IconButton
-} from '@fluentui/react';
-import { useParams } from 'react-router-dom';
-import { useWindowSize } from '../../hooks/useWindowSize';
+  IconButton,
+} from "@fluentui/react";
+import { useParams } from "react-router-dom";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 function validateInput(input: string): ValidationState {
-  if (input.indexOf('@') !== -1) {
+  if (input.indexOf("@") !== -1) {
     return ValidationState.valid;
   } else if (input.length > 1) {
     return ValidationState.warning;
@@ -31,13 +31,13 @@ function getTextFromItem(persona: IPersonaProps): string {
 }
 
 const suggestionProps: IBasePickerSuggestionsProps = {
-  suggestionsHeaderText: 'Suggested People',
-  mostRecentlyUsedHeaderText: 'Suggested Contacts',
-  noResultsFoundText: 'No results found',
-  loadingText: 'Loading',
+  suggestionsHeaderText: "Suggested People",
+  mostRecentlyUsedHeaderText: "Suggested Contacts",
+  noResultsFoundText: "No results found",
+  loadingText: "Loading",
   showRemoveButtons: false,
-  suggestionsAvailableAlertText: 'People Picker Suggestions available',
-  suggestionsContainerAriaLabel: 'Suggested contacts'
+  suggestionsAvailableAlertText: "People Picker Suggestions available",
+  suggestionsContainerAriaLabel: "Suggested contacts",
 };
 
 function EditGroup() {
@@ -46,20 +46,22 @@ function EditGroup() {
   const [group, setGroup] = useState<{
     name: string;
     users: { id: string; text: string; secondaryText: string }[];
-  }>({ name: '', users: [] });
+  }>({ name: "", users: [] });
   const { id }: any = useParams();
 
   useEffect(() => {
     firebase
       .firestore()
-      .collection('groups')
+      .collection("groups")
       .doc(id)
-      .onSnapshot(documentSnapshot => {
+      .onSnapshot((documentSnapshot) => {
         setGroup({
-          ...documentSnapshot.data()
+          ...documentSnapshot.data(),
         } as any);
       });
   }, [id]);
+
+  console.log(group);
 
   const onFilterChanged = useCallback(
     (
@@ -69,24 +71,21 @@ function EditGroup() {
     ): IPersonaProps[] | PromiseLike<IPersonaProps[]> => {
       return firebase
         .firestore()
-        .collection('users')
-        .where('email', '>=', filterText)
+        .collection("users")
+        .where("email", ">=", filterText)
         .limit(10)
         .get()
-        .then(querySnapshot => {
-          return querySnapshot.docs.map(doc => {
+        .then((querySnapshot) => {
+          return querySnapshot.docs.map((doc) => {
             return {
-              imageInitials: doc
-                .data()
-                .displayName.slice(0, 2)
-                .toUpperCase(),
-              imageUrl: '',
-              optionalText: 'Available at 4:00pm',
+              imageInitials: doc.data().displayName.slice(0, 2).toUpperCase(),
+              imageUrl: "",
+              optionalText: "Available at 4:00pm",
               presence: 2,
               secondaryText: doc.data().email,
-              tertiaryText: 'In a meeting',
+              tertiaryText: "In a meeting",
               text: doc.data().displayName,
-              id: doc.id
+              id: doc.id,
             };
           });
         });
@@ -101,10 +100,7 @@ function EditGroup() {
         initialValues={group}
         validationSchema={() =>
           Yup.object({
-            name: Yup.string()
-              .label('Group name')
-              .min(4)
-              .required()
+            name: Yup.string().label("Group name").min(4).required(),
           })
         }
         onSubmit={async (values, actions) => {
@@ -114,40 +110,42 @@ function EditGroup() {
           try {
             firebase
               .firestore()
-              .collection('groups')
+              .collection("groups")
               .doc(id)
               .update({
                 name: values.name,
-                users: firebase.firestore.FieldValue.arrayUnion(...values.users)
+                users: firebase.firestore.FieldValue.arrayUnion(
+                  ...values.users
+                ),
               });
             if (values.users) {
-              values.users.forEach(user => {
+              values.users.forEach((user) => {
                 firebase
                   .firestore()
-                  .collection('users')
+                  .collection("users")
                   .doc(user.id)
                   .update({
                     groups: firebase.firestore.FieldValue.arrayUnion({
                       id,
-                      name: group.name
-                    })
+                      name: group.name,
+                    }),
                   });
               });
             }
             actions.setStatus({
-              message: 'Group updated successfully!',
-              type: 'Success'
+              message: "Group updated successfully!",
+              type: "Success",
             });
           } catch (err) {
             console.log(err);
             actions.setStatus({
-              message: 'There was a problem updating the group!',
-              type: 'Error'
+              message: "There was a problem updating the group!",
+              type: "Error",
             });
           }
         }}
       >
-        {formikProps => (
+        {(formikProps) => (
           <Form>
             <br />
             <TextField
@@ -158,14 +156,14 @@ function EditGroup() {
               onChange={formikProps.handleChange}
               onBlur={formikProps.handleBlur}
               errorMessage={
-                formikProps.touched.name ? formikProps.errors.name : ''
+                formikProps.touched.name ? formikProps.errors.name : ""
               }
             />
             {formikProps.status && (
               <div style={{ marginTop: 4 }}>
                 <MessageBar
                   messageBarType={
-                    formikProps.status.type === 'Error'
+                    formikProps.status.type === "Error"
                       ? MessageBarType.error
                       : MessageBarType.success
                   }
@@ -184,14 +182,14 @@ function EditGroup() {
               onResolveSuggestions={onFilterChanged}
               getTextFromItem={getTextFromItem}
               pickerSuggestionsProps={suggestionProps}
-              className={'ms-PeoplePicker'}
+              className={"ms-PeoplePicker"}
               onValidateInput={validateInput}
               onChange={(change: any) => {
                 if (!change.length) {
                   return;
                 }
                 formikProps.setFieldValue(
-                  'users',
+                  "users",
                   formikProps.values.users
                     ? formikProps.values.users.concat(change)
                     : change
@@ -215,7 +213,7 @@ function EditGroup() {
               //     return null;
               //   }}
               inputProps={{
-                placeholder: 'Enter email ID to search'
+                placeholder: "Enter email ID to search",
                 //   onBlur: (ev: React.FocusEvent<HTMLInputElement>) =>
                 //     console.log('onBlur called'),
                 //   onFocus: (ev: React.FocusEvent<HTMLInputElement>) =>
@@ -229,17 +227,17 @@ function EditGroup() {
             <div
               style={{
                 height: height - 300,
-                overflowY: 'scroll'
+                overflowY: "scroll",
               }}
             >
               {group.users &&
-                group.users.map(user => (
+                group.users.map((user) => (
                   <div
                     key={user.id}
                     style={{
                       marginBottom: 8,
-                      display: 'flex',
-                      justifyContent: 'space-between'
+                      display: "flex",
+                      justifyContent: "space-between",
                     }}
                   >
                     <div>
@@ -254,24 +252,24 @@ function EditGroup() {
                       onClick={() => {
                         firebase
                           .firestore()
-                          .collection('groups')
+                          .collection("groups")
                           .doc(id)
                           .update({
                             users: firebase.firestore.FieldValue.arrayRemove(
                               user
-                            )
+                            ),
                           });
                         firebase
                           .firestore()
-                          .collection('users')
+                          .collection("users")
                           .doc(user.id)
                           .update({
                             groups: firebase.firestore.FieldValue.arrayRemove(
                               group
-                            )
+                            ),
                           });
                       }}
-                      iconProps={{ iconName: 'Clear' }}
+                      iconProps={{ iconName: "Clear" }}
                       title="Clear"
                       ariaLabel="Clear"
                     />
